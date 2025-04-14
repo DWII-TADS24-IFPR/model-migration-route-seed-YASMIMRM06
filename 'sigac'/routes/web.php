@@ -8,7 +8,6 @@ use App\Http\Controllers\DeclaracaoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\NivelController;
 use App\Http\Controllers\TurmaController;
-
 /*Rotas Públicas*/
 Route::get('/', function () {
     return view('welcome');
