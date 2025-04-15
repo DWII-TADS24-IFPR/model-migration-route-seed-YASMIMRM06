@@ -1,66 +1,61 @@
 @extends('layouts.app')
 
-@section('title', 'Cadastrar Categoria')
-
 @section('content')
-<div class="container mt-4">
+<div class="container">
     <h1 class="mb-4">Cadastrar Nova Categoria</h1>
-    
-    <form action="{{ route('categorias.store') }}" method="POST" class="needs-validation" novalidate>
+
+    <form action="{{ route('categorias.store') }}" method="POST">
         @csrf
         
-        <div class="row g-3 mb-4">
+        <div class="row">
             <div class="col-md-6">
-                <label for="nome" class="form-label">Nome da Categoria *</label>
-                <input type="text" class="form-control" id="nome" name="nome" required>
-                <div class="invalid-feedback">
-                    Por favor, informe o nome da categoria.
+                <div class="form-group">
+                    <label for="nome">Nome da Categoria*</label>
+                    <input type="text" class="form-control @error('nome') is-invalid @enderror" id="nome" name="nome" value="{{ old('nome') }}" required>
+                    @error('nome')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
-
+            
             <div class="col-md-6">
-                <label for="horas_maximas" class="form-label">Horas Máximas *</label>
-                <input type="number" class="form-control" id="horas_maximas" 
-                       name="horas_maximas" min="1" required>
-                <div class="invalid-feedback">
-                    Informe a quantidade máxima de horas.
+                <div class="form-group">
+                    <label for="icone">Ícone (Font Awesome)</label>
+                    <input type="text" class="form-control @error('icone') is-invalid @enderror" id="icone" name="icone" value="{{ old('icone') }}" placeholder="Ex: fa-laptop-code">
+                    @error('icone')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <small class="form-text text-muted">
+                        Consulte os ícones disponíveis em <a href="https://fontawesome.com/icons" target="_blank">Font Awesome</a>
+                    </small>
                 </div>
-            </div>
-
-            <div class="col-12">
-                <label for="descricao" class="form-label">Descrição</label>
-                <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between">
-            <a href="{{ route('categorias.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea class="form-control @error('descricao') is-invalid @enderror" id="descricao" name="descricao" rows="3">{{ old('descricao') }}</textarea>
+            @error('descricao')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            <label for="cor">Cor</label>
+            <input type="color" class="form-control form-control-color @error('cor') is-invalid @enderror" id="cor" name="cor" value="{{ old('cor', '#6c757d') }}">
+            @error('cor')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mt-4">
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Cadastrar Categoria
+                <i class="fas fa-save"></i> Salvar Categoria
             </button>
+            <a href="{{ route('categorias.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
         </div>
     </form>
 </div>
-
-@push('scripts')
-<script>
-// Validação do formulário no front-end
-(() => {
-    'use strict'
-    const forms = document.querySelectorAll('.needs-validation')
-    
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
-            }
-            form.classList.add('was-validated')
-        }, false)
-    })
-})()
-</script>
-@endpush
 @endsection

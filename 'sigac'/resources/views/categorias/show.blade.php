@@ -1,13 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Detalhes da Categoria')
-
 @section('content')
-<div class="container mt-4">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Detalhes da Categoria</h1>
-        <div class="d-flex gap-2">
-            <a href="{{ route('categorias.edit', $categoria->id) }}" class="btn btn-warning">
+        <div>
+            <a href="{{ route('categorias.edit', $categoria->id) }}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Editar
             </a>
             <a href="{{ route('categorias.index') }}" class="btn btn-secondary">
@@ -17,44 +15,41 @@
     </div>
 
     <div class="card">
+        <div class="card-header" style="background-color: {{ $categoria->cor }}; color: white;">
+            <h3 class="mb-0">
+                <i class="{{ $categoria->icone }}"></i> {{ $categoria->nome }}
+            </h3>
+        </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
-                    <h5 class="card-title">Informações Básicas</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <strong>Nome:</strong> {{ $categoria->nome }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Horas Máximas:</strong> {{ $categoria->horas_maximas_formatadas }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Data de Cadastro:</strong> 
-                            {{ $categoria->created_at->format('d/m/Y H:i') }}
-                        </li>
-                    </ul>
+                <div class="col-md-8">
+                    <h5>Descrição:</h5>
+                    <p>{{ $categoria->descricao ?? 'Nenhuma descrição cadastrada' }}</p>
                 </div>
-                <div class="col-md-6">
-                    <h5 class="card-title">Estatísticas</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <strong>Total de Comprovantes:</strong> {{ $categoria->comprovantes->count() }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Última Atualização:</strong> 
-                            {{ $categoria->updated_at->format('d/m/Y H:i') }}
-                        </li>
-                    </ul>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            Estatísticas
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Cursos associados:</strong> {{ $categoria->cursos_count }}</p>
+                            <p><strong>Criada em:</strong> {{ $categoria->created_at->format('d/m/Y H:i') }}</p>
+                            <p><strong>Última atualização:</strong> {{ $categoria->updated_at->format('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            @if($categoria->descricao)
-            <div class="mt-4">
-                <h5>Descrição Completa</h5>
-                <p class="card-text">{{ $categoria->descricao }}</p>
-            </div>
-            @endif
-        </div>
-    </div>
-</div>
-@endsection
+            <hr>
+
+            <h4>Cursos nesta categoria</h4>
+            @if($categoria->cursos->count() > 0)
+                <div class="row">
+                    @foreach($categoria->cursos as $curso)
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $curso->nome }}</h5>
+                                    <p class="card-text">{{ Str::limit($curso->descricao, 100) }}</p>
+                                    <a href="{{ route('cursos.show', $curso->id) }}" class="btn btn-sm btn-outline-primary">
+                                        Ver

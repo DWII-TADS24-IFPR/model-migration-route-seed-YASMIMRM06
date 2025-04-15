@@ -1,25 +1,85 @@
 @extends('layouts.app')
 
-@section('title', 'Turmas')
-
 @section('content')
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Turmas Cadastradas</h1>
-        <a href="{{ route('turmas.create') }}" class="btn btn-primary">
+<div class="container">
+    <h1 class="mb-4">Turmas</h1>
+    
+    <div class="mb-4">
+        <a href="{{ route('turmas.create') }}" class="btn btn-success">
             <i class="fas fa-plus"></i> Nova Turma
         </a>
     </div>
 
-    <!-- Tabela de turmas -->
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ route('turmas.index') }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="curso_id">Curso</label>
+                            <select class="form-control" id="curso_id" name="curso_id">
+                                <option value="">Todos</option>
+                                @foreach($cursos as $curso)
+                                    <option value="{{ $curso->id }}" {{ request('curso_id') == $curso->id ? 'selected' : '' }}>
+                                        {{ $curso->nome }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">Todos</option>
+                                <option value="planejada" {{ request('status') == 'planejada' ? 'selected' : '' }}>Planejada</option>
+                                <option value="ativa" {{ request('status') == 'ativa' ? 'selected' : '' }}>Ativa</option>
+                                <option value="concluida" {{ request('status') == 'concluida' ? 'selected' : '' }}>Concluída</option>
+                                <option value="cancelada" {{ request('status') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="periodo">Período</label>
+                            <select class="form-control" id="periodo" name="periodo">
+                                <option value="">Todos</option>
+                                <option value="futuras" {{ request('periodo') == 'futuras' ? 'selected' : '' }}>Futuras</option>
+                                <option value="ativas" {{ request('periodo') == 'ativas' ? 'selected' : '' }}>Ativas</option>
+                                <option value="encerradas" {{ request('periodo') == 'encerradas' ? 'selected' : '' }}>Encerradas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                <a href="{{ route('turmas.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+            </form>
+        </div>
+    </div>
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
-            <thead class="table-dark">
+            <thead class="thead-dark">
                 <tr>
                     <th>Código</th>
                     <th>Curso</th>
+                    <th>Nome</th>
                     <th>Período</th>
-                    <th>Alunos</th>
+                    <th>Vagas</th>
+                    <th>Status</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -28,36 +88,64 @@
                 <tr>
                     <td>{{ $turma->codigo }}</td>
                     <td>{{ $turma->curso->nome }}</td>
-                    <td>{{ $turma->ano }}.{{ $turma->semestre }}</td>
-                    <td>{{ $turma->alunos->count() }}</td>
+                    <td>{{ $turma->nome }}</td>
                     <td>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('turmas.show', $turma->id) }}" 
-                               class="btn btn-sm btn-info" title="Visualizar">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('turmas.edit', $turma->id) }}" 
-                               class="btn btn-sm btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('turmas.destroy', $turma->id) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" 
-                                        title="Excluir" onclick="return confirm('Tem certeza?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                        {{ $turma->data_inicio->format('d/m/Y') }} - 
+                        {{ $turma->data_fim->format('d/m/Y') }}
+                        @if($turma->horario)
+                            <br><small>{{ $turma->horario }}</small>
+                        @endif
+                    </td>
+                    <td>
+                        {{ $turma->vagas_disponiveis }} / {{ $turma->vagas_totais }}
+                        <div class="progress mt-1" style="height: 5px;">
+                            <div class="progress-bar bg-{{ $turma->vagas_disponiveis/$turma->vagas_totais < 0.2 ? 'danger' : ($turma->vagas_disponiveis/$turma->vagas_totais < 0.5 ? 'warning' : 'success') }}" 
+                                 role="progressbar" 
+                                 style="width: {{ (1 - $turma->vagas_disponiveis/$turma->vagas_totais) * 100 }}%" 
+                                 aria-valuenow="{{ (1 - $turma->vagas_disponiveis/$turma->vagas_totais) * 100 }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
                         </div>
+                    </td>
+                    <td>
+                        @if($turma->status == 'ativa')
+                            <span class="badge badge-success">Ativa</span>
+                        @elseif($turma->status == 'concluida')
+                            <span class="badge badge-secondary">Concluída</span>
+                        @elseif($turma->status == 'cancelada')
+                            <span class="badge badge-danger">Cancelada</span>
+                        @else
+                            <span class="badge badge-info">Planejada</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('turmas.show', $turma->id) }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ route('turmas.edit', $turma->id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ route('turmas.destroy', $turma->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="text-center py-4">Nenhuma turma cadastrada</td>
+                    <td colspan="7" class="text-center">Nenhuma turma encontrada</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        {{ $turmas->appends(request()->query())->links() }}
     </div>
 </div>
 @endsection
