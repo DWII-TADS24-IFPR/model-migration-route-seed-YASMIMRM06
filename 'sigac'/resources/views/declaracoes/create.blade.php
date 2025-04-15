@@ -69,4 +69,30 @@
             <label for="status">Status*</label>
             <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
                 <option value="emitida" {{ old('status') == 'emitida' ? 'selected' : '' }}>Emitida</option>
-                <option value="pendente" {{ old('status') ==
+                <option value="pendente" {{ old('status') == 'pendente' ? 'selected' : '' }}>Pendente</option>
+                <option value="cancelada" {{ old('status') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+            </select>
+            @error('status')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            <label for="observacoes">Observações</label>
+            <textarea class="form-control @error('observacoes') is-invalid @enderror" id="observacoes" name="observacoes" rows="3">{{ old('observacoes') }}</textarea>
+            @error('observacoes')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Emitir Declaração
+            </button>
+            <a href="{{ route('declaracoes.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+@endsection
