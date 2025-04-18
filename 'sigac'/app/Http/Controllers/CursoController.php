@@ -1,4 +1,6 @@
 <?php
+// app/Http/Controllers/CursoController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Curso;
@@ -7,82 +9,98 @@ use Illuminate\Http\Request;
 class CursoController extends Controller
 {
     /**
-     * Exibe lista de cursos
+     * Lista todos cursos com níveis e eixos
      */
     public function index()
     {
-        $cursos = Curso::latest()->get();
-        return view('cursos.index', compact('cursos'));
+        $cursos = Curso::with(['nivel', 'eixo'])
+            ->orderBy('nome')
+            ->paginate(10);
+
+        return response()->json($cursos);
     }
 
     /**
-     * Mostra formulário de criação
-     */
-    public function create()
-    {
-        return view('cursos.create');
-    }
-
-    /**
-     * Armazena novo curso
+     * Cria novo curso
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required|string|max:100',
-            'sigla' => 'required|string|max:10|unique:cursos',
-            'duracao' => 'required|integer|min:1',
-            'descricao' => 'nullable|string'
+            'nome' => 'required|string|max:150',
+            'sigla' => 'required|string|max:10',
+            'total_horas' => 'required|numeric|min:0',
+            'nivel_id' => 'required|exists:nivels,id',
+            'eixo_id' => 'required|exists:eixos,id'
         ]);
 
-        Curso::create($request->all());
+        $curso = Curso::create($request->all());
 
-        return redirect()->route('cursos.index')
-               ->with('success', 'Curso cadastrado com sucesso!');
+        return response()->json($curso, 201);
     }
 
     /**
-     * Exibe detalhes de um curso
+     * Mostra um curso específico
      */
-    public function show(Curso $curso)
+    public function show($id)
     {
-        return view('cursos.show', compact('curso'));
+        $curso = Curso::with(['nivel', 'eixo', 'turmas', 'alunos'])
+            ->findOrFail($id);
+
+        return response()->json($curso);
     }
 
     /**
-     * Mostra formulário de edição
+     * Atualiza um curso
      */
-    public function edit(Curso $curso)
+    public function update(Request $request, $id)
     {
-        return view('cursos.edit', compact('curso'));
-    }
+        $curso = Curso::findOrFail($id);
 
-    /**
-     * Atualiza curso existente
-     */
-    public function update(Request $request, Curso $curso)
-    {
         $request->validate([
-            'nome' => 'required|string|max:100',
-            'sigla' => 'required|string|max:10|unique:cursos,sigla,'.$curso->id,
-            'duracao' => 'required|integer|min:1',
-            'descricao' => 'nullable|string'
+            'nome' => 'sometimes|string|max:150',
+            'sigla' => 'sometimes|string|max:10',
+            'total_horas' => 'sometimes|numeric|min:0',
+            'nivel_id' => 'sometimes|exists:nivels,id',
+            'eixo_id' => 'sometimes|exists:eixos,id'
         ]);
 
         $curso->update($request->all());
 
-        return redirect()->route('cursos.index')
-               ->with('success', 'Curso atualizado com sucesso!');
+        return response()->json($curso);
     }
 
     /**
-     * Remove um curso (SoftDelete)
+     * Remove um curso (soft delete)
      */
-    public function destroy(Curso $curso)
+    public function destroy($id)
     {
+        $curso = Curso::findOrFail($id);
         $curso->delete();
 
-        return redirect()->route('cursos.index')
-               ->with('success', 'Curso removido com sucesso!');
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Restaura curso excluído
+     */
+    public function restore($id)
+    {
+        $curso = Curso::withTrashed()->findOrFail($id);
+        $curso->restore();
+
+        return response()->json($curso);
+    }
+
+    /**
+     * Lista cursos por eixo
+     */
+    public function porEixo($eixoId)
+    {
+        $cursos = Curso::where('eixo_id', $eixoId)
+            ->with(['nivel'])
+            ->orderBy('nome')
+            ->get();
+
+        return response()->json($cursos);
     }
 }
