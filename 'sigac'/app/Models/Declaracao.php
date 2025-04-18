@@ -1,51 +1,37 @@
 <?php
+// app/Models/Declaracao.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Model Declaracao - Declarações geradas para alunos
- * 
- * @property int $id
- * @property int $aluno_id
- * @property string $codigo
- * @property string $conteudo
- * @property string $status
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- */
 class Declaracao extends Model
 {
     use SoftDeletes;
 
-    // Status possíveis
-    const STATUS_EMITIDA = 'emitida';
-    const STATUS_CANCELADA = 'cancelada';
-
     protected $fillable = [
+        'hash',
+        'data',
         'aluno_id',
-        'codigo',
-        'conteudo',
-        'status'
+        'comprovante_id'
     ];
 
-    protected $dates = ['deleted_at'];
+    // Define que o campo 'data' deve ser tratado como datetime
+    protected $casts = [
+        'data' => 'datetime'
+    ];
 
-    /**
-     * Relacionamento: Uma declaração pertence a um aluno
-     */
-    public function aluno()
+    // Relacionamento: Uma declaração pertence a um aluno
+    public function aluno(): BelongsTo
     {
         return $this->belongsTo(Aluno::class);
     }
 
-    /**
-     * Gera um código único para a declaração
-     */
-    public static function gerarCodigo()
+    // Relacionamento: Uma declaração pertence a um comprovante
+    public function comprovante(): BelongsTo
     {
-        return 'DEC-' . strtoupper(uniqid());
+        return $this->belongsTo(Comprovante::class);
     }
 }
