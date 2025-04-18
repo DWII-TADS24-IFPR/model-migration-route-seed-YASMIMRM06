@@ -1,4 +1,5 @@
 <?php
+// database/seeders/DatabaseSeeder.php
 
 namespace Database\Seeders;
 
@@ -8,15 +9,18 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
+        // Ordem correta para evitar erros de relacionamento
         $this->call([
-            CategoriaSeeder::class,
             NivelSeeder::class,
+            EixoSeeder::class,
             CursoSeeder::class,
-            AlunoSeeder::class,
             TurmaSeeder::class,
+            CategoriaSeeder::class,
+            // UserSeeder::class, // Se existir
+            AlunoSeeder::class,
             ComprovanteSeeder::class,
-            DeclaracaoSeeder::class,
-            DocumentoSeeder::class,
+            // DocumentoSeeder::class, // Se necessário
+            // DeclaracaoSeeder::class, // Se necessário
         ]);
     }
 }

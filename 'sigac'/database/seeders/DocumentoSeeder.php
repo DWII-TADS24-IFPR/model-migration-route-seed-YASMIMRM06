@@ -1,70 +1,77 @@
 <?php
+// database/migrations/2023_01_01_000007_create_documentos_table.php
 
-namespace Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use App\Models\Documento;
-use Carbon\Carbon;
-use Illuminate\Database\Seeder;
-
-class DocumentoSeeder extends Seeder
+class CreateDocumentosTable extends Migration
 {
-    public function run()
+    /**
+     * Executa as migrações para criar a tabela de documentos.
+     * 
+     * Documentos são arquivos enviados para comprovar atividades,
+     * podendo ser analisados e aprovados/reprovados pelo sistema.
+     */
+    public function up()
     {
-        $documentos = [
-            [
-                'aluno_id' => 1,
-                'tipo' => 'rg',
-                'descricao' => 'Cópia do RG',
-                'arquivo_path' => 'documentos/rg_joao.pdf',
-                'tipo_arquivo' => 'PDF',
-                'data_envio' => Carbon::now()->subDays(30),
-                'status' => 'aprovado',
-                'observacoes' => 'Documento válido'
-            ],
-            [
-                'aluno_id' => 1,
-                'tipo' => 'cpf',
-                'descricao' => 'Cópia do CPF',
-                'arquivo_path' => 'documentos/cpf_joao.pdf',
-                'tipo_arquivo' => 'PDF',
-                'data_envio' => Carbon::now()->subDays(30),
-                'status' => 'aprovado',
-                'observacoes' => 'Documento válido'
-            ],
-            [
-                'aluno_id' => 2,
-                'tipo' => 'rg',
-                'descricao' => 'Cópia do RG',
-                'arquivo_path' => 'documentos/rg_maria.pdf',
-                'tipo_arquivo' => 'PDF',
-                'data_envio' => Carbon::now()->subDays(25),
-                'status' => 'aprovado',
-                'observacoes' => 'Documento válido'
-            ],
-            [
-                'aluno_id' => 3,
-                'tipo' => 'historico',
-                'descricao' => 'Histórico escolar',
-                'arquivo_path' => 'documentos/historico_carlos.pdf',
-                'tipo_arquivo' => 'PDF',
-                'data_envio' => Carbon::now()->subDays(15),
-                'status' => 'pendente',
-                'observacoes' => 'Aguardando análise'
-            ],
-            [
-                'aluno_id' => 4,
-                'tipo' => 'certificado',
-                'descricao' => 'Certificado curso anterior',
-                'arquivo_path' => 'documentos/certificado_ana.pdf',
-                'tipo_arquivo' => 'PDF',
-                'data_envio' => Carbon::now()->subDays(10),
-                'status' => 'rejeitado',
-                'observacoes' => 'Documento ilegível, necessário reenvio'
-            ]
-        ];
+        Schema::create('documentos', function (Blueprint $table) {
+            // Chave primária auto-incremento
+            $table->id();
+            
+            // URL ou caminho do arquivo no sistema de armazenamento
+            $table->string('url');
+            
+            // Descrição detalhada do documento
+            $table->text('descricao');
+            
+            // Horas solicitadas pelo aluno (pode conter decimais)
+            $table->float('horas_in');
+            
+            // Status do documento (enum: pendente, aprovado, reprovado)
+            $table->enum('status', ['pendente', 'aprovado', 'reprovado'])->default('pendente');
+            
+            // Comentário opcional do avaliador
+            $table->text('comentario')->nullable();
+            
+            // Horas aprovadas (pode ser diferente do solicitado)
+            $table->float('horas_out')->nullable();
+            
+            // Chave estrangeira para a categoria do documento
+            $table->foreignId('categoria_id')
+                  ->constrained('categories')
+                  ->onDelete('cascade');
+            
+            // Chave estrangeira para o usuário que registrou o documento
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
+            
+            // Timestamps padrão do Laravel
+            $table->timestamps();
+            
+            // Soft delete
+            $table->softDeletes();
+            
+            // Índices para otimização
+            $table->index('categoria_id');
+            $table->index('user_id');
+            $table->index('status');
+        });
+    }
 
-        foreach ($documentos as $documento) {
-            Documento::create($documento);
-        }
+    /**
+     * Reverte as migrações - remove a tabela de documentos.
+     */
+    public function down()
+    {
+        // Remove as chaves estrangeiras primeiro
+        Schema::table('documentos', function (Blueprint $table) {
+            $table->dropForeign(['categoria_id']);
+            $table->dropForeign(['user_id']);
+        });
+        
+        // Remove a tabela
+        Schema::dropIfExists('documentos');
     }
 }

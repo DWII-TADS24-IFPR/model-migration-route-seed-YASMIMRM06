@@ -1,4 +1,5 @@
 <?php
+// database/seeders/AlunoSeeder.php
 
 namespace Database\Seeders;
 
@@ -10,66 +11,50 @@ class AlunoSeeder extends Seeder
 {
     public function run()
     {
+        // Obtém turmas e cursos
+        $turmaADS2023 = \App\Models\Turma::where('ano', 2023)
+            ->whereHas('curso', function($q) {
+                $q->where('sigla', 'ADS');
+            })->first();
+
+        $turmaINFO2023 = \App\Models\Turma::where('ano', 2023)
+            ->whereHas('curso', function($q) {
+                $q->where('sigla', 'INFO');
+            })->first();
+
+        // Cria usuários professores primeiro
+        $professorADS = \App\Models\User::create([
+            'nome' => 'Professor ADS',
+            'email' => 'prof.ads@example.com',
+            'senha' => Hash::make('password'),
+            'role_id' => 2, // Assumindo que 2 é o ID para professores
+        ]);
+
         $alunos = [
             [
                 'nome' => 'João Silva',
-                'email' => 'joao.silva@example.com',
-                'cpf' => '123.456.789-00',
-                'data_nascimento' => '1990-05-15',
-                'telefone' => '(11) 99999-9999',
-                'endereco' => 'Rua das Flores, 123',
-                'cidade' => 'São Paulo',
-                'estado' => 'SP',
-                'cep' => '01234-567'
+                'cpf' => '12345678901',
+                'email' => 'joao@aluno.example.com',
+                'senha' => Hash::make('aluno123'),
+                'user_id' => $professorADS->id,
+                'curso_id' => $turmaADS2023->curso_id,
+                'turma_id' => $turmaADS2023->id,
             ],
             [
-                'nome' => 'Maria Oliveira',
-                'email' => 'maria.oliveira@example.com',
-                'cpf' => '987.654.321-00',
-                'data_nascimento' => '1992-08-20',
-                'telefone' => '(21) 98888-8888',
-                'endereco' => 'Avenida Brasil, 456',
-                'cidade' => 'Rio de Janeiro',
-                'estado' => 'RJ',
-                'cep' => '20000-000'
+                'nome' => 'Maria Souza',
+                'cpf' => '98765432109',
+                'email' => 'maria@aluno.example.com',
+                'senha' => Hash::make('aluno123'),
+                'user_id' => $professorADS->id,
+                'curso_id' => $turmaINFO2023->curso_id,
+                'turma_id' => $turmaINFO2023->id,
             ],
-            [
-                'nome' => 'Carlos Souza',
-                'email' => 'carlos.souza@example.com',
-                'cpf' => '456.789.123-00',
-                'data_nascimento' => '1985-11-30',
-                'telefone' => '(31) 97777-7777',
-                'endereco' => 'Rua Minas Gerais, 789',
-                'cidade' => 'Belo Horizonte',
-                'estado' => 'MG',
-                'cep' => '30000-000'
-            ],
-            [
-                'nome' => 'Ana Pereira',
-                'email' => 'ana.pereira@example.com',
-                'cpf' => '789.123.456-00',
-                'data_nascimento' => '1988-03-25',
-                'telefone' => '(41) 96666-6666',
-                'endereco' => 'Rua Paraná, 101',
-                'cidade' => 'Curitiba',
-                'estado' => 'PR',
-                'cep' => '80000-000'
-            ],
-            [
-                'nome' => 'Pedro Costa',
-                'email' => 'pedro.costa@example.com',
-                'cpf' => '321.654.987-00',
-                'data_nascimento' => '1995-07-10',
-                'telefone' => '(51) 95555-5555',
-                'endereco' => 'Avenida Farrapos, 202',
-                'cidade' => 'Porto Alegre',
-                'estado' => 'RS',
-                'cep' => '90000-000'
-            ]
+            // Adicione mais alunos conforme necessário
         ];
 
         foreach ($alunos as $aluno) {
             Aluno::create($aluno);
+            $this->command->info("Aluno {$aluno['nome']} criado!");
         }
     }
 }

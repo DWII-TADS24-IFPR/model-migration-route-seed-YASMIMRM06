@@ -1,4 +1,5 @@
 <?php
+// database/seeders/CategoriaSeeder.php
 
 namespace Database\Seeders;
 
@@ -9,41 +10,33 @@ class CategoriaSeeder extends Seeder
 {
     public function run()
     {
+        $cursoADS = \App\Models\Curso::where('sigla', 'ADS')->first();
+        $cursoINFO = \App\Models\Curso::where('sigla', 'INFO')->first();
+
         $categorias = [
+            // Categorias para ADS
             [
-                'nome' => 'Tecnologia da Informação',
-                'descricao' => 'Cursos relacionados a TI e desenvolvimento de software',
-                'icone' => 'fa-laptop-code',
-                'cor' => '#3498db'
+                'nome' => 'Extensão',
+                'maximo_horas' => 200,
+                'curso_id' => $cursoADS->id,
             ],
             [
-                'nome' => 'Administração',
-                'descricao' => 'Cursos de gestão e administração de empresas',
-                'icone' => 'fa-briefcase',
-                'cor' => '#2ecc71'
+                'nome' => 'Pesquisa',
+                'maximo_horas' => 150,
+                'curso_id' => $cursoADS->id,
             ],
+            
+            // Categorias para INFO
             [
-                'nome' => 'Design',
-                'descricao' => 'Cursos de design gráfico e UX/UI',
-                'icone' => 'fa-palette',
-                'cor' => '#9b59b6'
+                'nome' => 'Atividades Complementares',
+                'maximo_horas' => 100,
+                'curso_id' => $cursoINFO->id,
             ],
-            [
-                'nome' => 'Saúde',
-                'descricao' => 'Cursos na área da saúde e bem-estar',
-                'icone' => 'fa-heartbeat',
-                'cor' => '#e74c3c'
-            ],
-            [
-                'nome' => 'Idiomas',
-                'descricao' => 'Cursos de línguas estrangeiras',
-                'icone' => 'fa-language',
-                'cor' => '#f39c12'
-            ]
         ];
 
         foreach ($categorias as $categoria) {
             Categoria::create($categoria);
+            $this->command->info("Categoria {$categoria['nome']} criada para o curso {$categoria['curso_id']}!");
         }
     }
 }

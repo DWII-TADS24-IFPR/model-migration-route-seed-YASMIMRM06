@@ -1,4 +1,5 @@
 <?php
+// database/seeders/NivelSeeder.php
 
 namespace Database\Seeders;
 
@@ -7,37 +8,25 @@ use Illuminate\Database\Seeder;
 
 class NivelSeeder extends Seeder
 {
+    /**
+     * Cria os níveis básicos do sistema
+     */
     public function run()
     {
+        // Array com os níveis padrão
         $niveis = [
-            [
-                'nome' => 'Básico',
-                'sigla' => 'BAS',
-                'descricao' => 'Curso introdutório sem pré-requisitos',
-                'ordem' => 1
-            ],
-            [
-                'nome' => 'Intermediário',
-                'sigla' => 'INT',
-                'descricao' => 'Curso para quem já tem conhecimento básico',
-                'ordem' => 2
-            ],
-            [
-                'nome' => 'Avançado',
-                'sigla' => 'AV',
-                'descricao' => 'Curso para profissionais com experiência',
-                'ordem' => 3
-            ],
-            [
-                'nome' => 'Especialização',
-                'sigla' => 'ESP',
-                'descricao' => 'Cursos de especialização técnica',
-                'ordem' => 4
-            ]
+            ['nome' => 'Técnico'],
+            ['nome' => 'Graduação'],
+            ['nome' => 'Pós-Graduação'],
+            ['nome' => 'Extensão'],
         ];
 
+        // Percorre o array criando cada nível
         foreach ($niveis as $nivel) {
             Nivel::create($nivel);
+            
+            // Exibe mensagem no console (opcional)
+            $this->command->info("Nível {$nivel['nome']} criado com sucesso!");
         }
     }
 }
