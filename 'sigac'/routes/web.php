@@ -1,80 +1,145 @@
 <?php
+// routes/web.php
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AlunoController;
-use App\Http\Controllers\CursoController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\ComprovanteController;
-use App\Http\Controllers\DeclaracaoController;
-use App\Http\Controllers\DocumentoController;
-use App\Http\Controllers\NivelController;
-use App\Http\Controllers\TurmaController;
-/*Rotas Públicas*/
-Route::get('/', function () {
-    return view('welcome');
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+
+
+// Rotas Públicas (acessíveis sem autenticação)
+Route::middleware(['guest'])->group(function () {
+    // Página de login
+    Route::get('/login', [LoginController::class, 'showLoginForm'])
+        ->name('login');
+    
+    // Processar login
+    Route::post('/login', [LoginController::class, 'login']);
+    
+    // Página de registro (se aplicável)
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
+        ->name('register');
+    
+    // Processar registro
+    Route::post('/register', [RegisterController::class, 'register']);
+    
+    // Página de recuperação de senha
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+    
+    // Página de redefinição de senha
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
 });
-/*Rotas de Autenticação*/
-Auth::routes();
-/*Rotas Protegidas (requerem autenticação)*/
+
+// Rotas Protegidas (requerem autenticação)
 Route::middleware(['auth'])->group(function () {
-/*Dashboard*/
-    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-/*CRUDs Principais */
-    Route::resource('alunos', AlunoController::class);
-    Route::resource('cursos', CursoController::class);
-    Route::resource('categorias', CategoriaController::class);
-    Route::resource('comprovantes', ComprovanteController::class);
-    Route::resource('declaracoes', DeclaracaoController::class);
-    Route::resource('documentos', DocumentoController::class);
-    Route::resource('niveis', NivelController::class);
-    Route::resource('turmas', TurmaController::class);
-    /*Rotas Customizadas para Alunos  */
+    // Logout
+    Route::post('/logout', [LoginController::class, 'logout'])
+        ->name('logout');
+    
+    // Dashboard principal
+    Route::get('/', [HomeController::class, 'index'])
+        ->name('home');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Alunos
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('alunos')->group(function () {
-        // Relatório de alunos por curso
-        Route::get('/relatorio/por-curso', [AlunoController::class, 'relatorioPorCurso'])
-            ->name('alunos.relatorio.curso');
-        // Exportar alunos para Excel
-        Route::get('/exportar', [AlunoController::class, 'exportar'])
-            ->name('alunos.exportar');
+        Route::get('/', [AlunoController::class, 'index'])
+            ->name('alunos.index')
+            ->middleware('can:viewAny,App\Models\Aluno');
+        
+        Route::get('/create', [AlunoController::class, 'create'])
+            ->name('alunos.create')
+            ->middleware('can:create,App\Models\Aluno');
+        
+        Route::get('/{id}', [AlunoController::class, 'show'])
+            ->name('alunos.show')
+            ->middleware('can:view,aluno');
+        
+        Route::get('/{id}/edit', [AlunoController::class, 'edit'])
+            ->name('alunos.edit')
+            ->middleware('can:update,aluno');
+        
+        // Rotas para exportação/relatórios
+        Route::get('/export', [AlunoController::class, 'export'])
+            ->name('alunos.export');
     });
-    /*Rotas Customizadas para Cursos*/
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Cursos
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('cursos')->group(function () {
-        // Cursos com vagas disponíveis
-        Route::get('/com-vagas', [CursoController::class, 'comVagas'])
-            ->name('cursos.com-vagas');
-        // Matriz curricular
-        Route::get('/{curso}/matriz', [CursoController::class, 'matrizCurricular'])
-            ->name('cursos.matriz');
+        Route::get('/', [CursoController::class, 'index'])
+            ->name('cursos.index');
+        
+        Route::get('/create', [CursoController::class, 'create'])
+            ->name('cursos.create');
+        
+        Route::get('/{id}', [CursoController::class, 'show'])
+            ->name('cursos.show');
+        
+        Route::get('/{id}/edit', [CursoController::class, 'edit'])
+            ->name('cursos.edit');
     });
-    /*Rotas para Comprovantes*/
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Comprovantes
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('comprovantes')->group(function () {
-        // Aprovar comprovante
-        Route::patch('/{comprovante}/aprovar', [ComprovanteController::class, 'aprovar'])
-            ->name('comprovantes.aprovar');           
-        // Rejeitar comprovante
-        Route::patch('/{comprovante}/rejeitar', [ComprovanteController::class, 'rejeitar'])
-            ->name('comprovantes.rejeitar');
+        Route::get('/', [ComprovanteController::class, 'index'])
+            ->name('comprovantes.index');
+        
+        Route::get('/create', [ComprovanteController::class, 'create'])
+            ->name('comprovantes.create');
+        
+        Route::get('/{id}', [ComprovanteController::class, 'show'])
+            ->name('comprovantes.show');
+        
+        // Upload de arquivos de comprovação
+        Route::get('/{id}/upload', [ComprovanteController::class, 'showUploadForm'])
+            ->name('comprovantes.upload');
     });
-/*Rotas para Documentos */
-    Route::prefix('documentos')->group(function () {
-        // Download de documento
-        Route::get('/{documento}/download', [DocumentoController::class, 'download'])
-            ->name('documentos.download');
-    });
-    /*Rotas para Relatórios   */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Relatórios
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('relatorios')->group(function () {
-        // Relatório de atividades complementares
-        Route::get('/atividades-complementares', [AlunoController::class, 'relatorioAtividades'])
-            ->name('relatorios.atividades');            
-        // Relatório de desempenho
-        Route::get('/desempenho', [AlunoController::class, 'relatorioDesempenho'])
-            ->name('relatorios.desempenho');
+        Route::get('/horas-alunos', [RelatorioController::class, 'horasPorAluno'])
+            ->name('relatorios.horas-alunos');
+        
+        Route::get('/horas-cursos', [RelatorioController::class, 'horasPorCurso'])
+            ->name('relatorios.horas-cursos');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas de Configuração
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('admin')->middleware(['can:admin'])->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])
+            ->name('admin.dashboard');
+        
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('admin.users');
     });
 });
-/*Rotas da API (opcional)*/
-Route::prefix('api')->group(function () {
-    Route::get('/alunos', [AlunoController::class, 'apiIndex']);
-    Route::get('/cursos', [CursoController::class, 'apiIndex']);
-});
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Fallback (404)
+|--------------------------------------------------------------------------
+*/
 Route::fallback(function () {
-    return view('errors.404');
+    return response()->view('errors.404', [], 404);
 });
