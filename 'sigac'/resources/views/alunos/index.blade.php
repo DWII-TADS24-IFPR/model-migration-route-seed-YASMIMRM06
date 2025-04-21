@@ -3,67 +3,45 @@
 @section('title', 'Lista de Alunos')
 
 @section('content')
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Lista de Alunos</h1>
-        <a href="{{ route('alunos.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Novo Aluno
-        </a>
-    </div>
+<div class="mb-4 flex justify-between items-center">
+    <h2 class="text-xl font-semibold">Alunos</h2>
+    <a href="{{ route('alunos.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Novo Aluno
+    </a>
+</div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Turma</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            @foreach($alunos as $aluno)
+            <tr>
+                <td class="px-6 py-4">{{ $aluno->nome }}</td>
+                <td class="px-6 py-4">{{ $aluno->curso->nome }}</td>
+                <td class="px-6 py-4">{{ $aluno->turma->ano }}</td>
+                <td class="px-6 py-4 space-x-2">
+                    <a href="{{ route('alunos.show', $aluno->id) }}" class="text-blue-600 hover:text-blue-800">Ver</a>
+                    <a href="{{ route('alunos.edit', $aluno->id) }}" class="text-green-600 hover:text-green-800">Editar</a>
+                    <form action="{{ route('alunos.destroy', $aluno->id) }}" method="POST" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Tem certeza?')">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Matrícula</th>
-                    <th>Curso</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($alunos as $aluno)
-                <tr>
-                    <td>{{ $aluno->id }}</td>
-                    <td>{{ $aluno->nome }}</td>
-                    <td>{{ $aluno->email }}</td>
-                    <td>{{ $aluno->matricula }}</td>
-                    <td>{{ $aluno->curso->nome }}</td>
-                    <td class="d-flex gap-2">
-                        <a href="{{ route('alunos.show', $aluno->id) }}" 
-                           class="btn btn-sm btn-info" title="Visualizar">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('alunos.edit', $aluno->id) }}" 
-                           class="btn btn-sm btn-warning" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form action="{{ route('alunos.destroy', $aluno->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" 
-                                    title="Excluir" onclick="return confirm('Tem certeza?')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="text-center py-4">Nenhum aluno cadastrado</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+<div class="mt-4">
+    {{ $alunos->links() }}
 </div>
 @endsection

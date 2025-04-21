@@ -1,70 +1,46 @@
 @extends('layouts.app')
 
+@section('title', 'Categorias')
+
 @section('content')
-<div class="container">
-    <h1 class="mb-4">Listagem de Categorias</h1>
-    
-    <div class="mb-4">
-        <a href="{{ route('categorias.create') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Nova Categoria
-        </a>
-    </div>
+<div class="mb-4 flex justify-between items-center">
+    <h2 class="text-xl font-semibold">Categorias de Atividades</h2>
+    <a href="{{ route('categorias.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Nova Categoria
+    </a>
+</div>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Máximo de Horas</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            @foreach($categorias as $categoria)
+            <tr>
+                <td class="px-6 py-4">{{ $categoria->nome }}</td>
+                <td class="px-6 py-4">{{ $categoria->maximo_horas }}h</td>
+                <td class="px-6 py-4">{{ $categoria->curso->nome }}</td>
+                <td class="px-6 py-4 space-x-2">
+                    <a href="{{ route('categorias.edit', $categoria->id) }}" class="text-green-600 hover:text-green-800">Editar</a>
+                    <form action="{{ route('categorias.destroy', $categoria->id) }}" method="POST" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Tem certeza?')">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Descrição</th>
-                    <th>Cursos</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($categorias as $categoria)
-                <tr>
-                    <td>{{ $categoria->id }}</td>
-                    <td>
-                        <span class="badge" style="background-color: {{ $categoria->cor }}; color: white;">
-                            <i class="{{ $categoria->icone }}"></i> {{ $categoria->nome }}
-                        </span>
-                    </td>
-                    <td>{{ Str::limit($categoria->descricao, 50) }}</td>
-                    <td>{{ $categoria->cursos_count }}</td>
-                    <td>
-                        <a href="{{ route('categorias.show', $categoria->id) }}" class="btn btn-sm btn-info">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('categorias.edit', $categoria->id) }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form action="{{ route('categorias.destroy', $categoria->id) }}" method="POST" style="display: inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="text-center">Nenhuma categoria cadastrada</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="d-flex justify-content-center">
-        {{ $categorias->links() }}
-    </div>
+<div class="mt-4">
+    {{ $categorias->links() }}
 </div>
 @endsection
