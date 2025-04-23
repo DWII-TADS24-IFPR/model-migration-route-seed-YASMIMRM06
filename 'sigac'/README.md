@@ -1,66 +1,219 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Visão Geral do que Já Foi Implementado
+aqui está tudo o que já fizemos no projeto até agora:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+### Backend Completo
+- **Migrations** prontas para todas as tabelas com SoftDelete
+- **Controllers** básicos com todos os métodos CRUD
+- **Rotas** configuradas usando Route::resource
+- **Models** com relacionamentos e SoftDelete
 
-## About Laravel
+### Frontend Iniciado
+- Views básicas criadas, mas ainda não finalizadas
+- Estrutura inicial de templates usando Blade
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+##  Estrutura dos Arquivos
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── AlunoController.php
+│   │   ├── CategoriaController.php
+│   │   └── ... [outros controllers]
+├── Models/
+│   ├── Aluno.php
+│   ├── Categoria.php
+│   └── ... [outros models]
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+database/
+├── migrations/
+│   ├── create_alunos_table.php
+│   ├── create_categorias_table.php
+│   └── ... [outras migrations]
 
-## Learning Laravel
+resources/
+├── views/
+│   ├── alunos/
+│   │   ├── index.blade.php
+│   │   ├── create.blade.php
+│   │   └── ... [outras views de aluno]
+│   ├── layouts/
+│   │   └── app.blade.php
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🔧 Como Continuar Desenvolvendo as Views
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 1. Padrão para Formulários
+```php
+// Exemplo em resources/views/alunos/create.blade.php
+@extends('layouts.app')
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+@section('content')
+    <h1>Criar Novo Aluno</h1>
+    
+    <form action="{{ route('alunos.store') }}" method="POST">
+        @csrf
+        
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" name="nome" class="form-control" required>
+        </div>
+        
+        <!-- Adicione outros campos conforme necessário -->
+        
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+@endsection
+```
 
-## Laravel Sponsors
+### 2. Listagem com SoftDelete
+```php
+// resources/views/alunos/index.blade.php
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($alunos as $aluno)
+        <tr>
+            <td>{{ $aluno->nome }}</td>
+            <td>
+                <a href="{{ route('alunos.edit', $aluno->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                
+                <form action="{{ route('alunos.destroy', $aluno->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger">Arquivar</button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+<!-- Link para ver itens arquivados -->
+<a href="{{ route('alunos.lixeira') }}" class="btn btn-secondary">Ver Arquivados</a>
+```
 
-### Premium Partners
+## Rotas Adicionais para SoftDelete
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Precisamos adicionar no controller e nas rotas:
 
-## Contributing
+```php
+// Em routes/web.php
+Route::get('alunos/lixeira', [AlunoController::class, 'lixeira'])->name('alunos.lixeira');
+Route::patch('alunos/{id}/restaurar', [AlunoController::class, 'restore'])->name('alunos.restore');
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```php
+// Em AlunoController.php
+public function lixeira()
+{
+    $alunos = Aluno::onlyTrashed()->get();
+    return view('alunos.lixeira', compact('alunos'));
+}
 
-## Code of Conduct
+public function restore($id)
+{
+    Aluno::onlyTrashed()->findOrFail($id)->restore();
+    return redirect()->route('alunos.index')->with('success', 'Aluno restaurado!');
+}
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 💡 Dicas para Continuar o Desenvolvimento
 
-## Security Vulnerabilities
+1. **Para criar uma nova view rapidamente**:
+   ```bash
+   php artisan make:view alunos/show --resource
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. **Componentes úteis para incluir**:
+   - Mensagens de sucesso/erro
+   - Confirmação antes de excluir
+   - Paginação nas listagens
 
-## License
+3. **Lembre-se de**:
+   ```php
+   // Sempre usar named routes nos links
+   {{ route('alunos.index') }}
+   
+   // Proteger contra CSRF
+   @csrf
+   
+   // Usar method spoofing para PUT/PATCH/DELETE
+   @method('DELETE')
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Fluxo de Trabalho Recomendado
+
+1. Comece terminando as views básicas (index, create, edit, show)
+2. Implemente a lixeira para visualizar itens arquivados
+3. Adicione a funcionalidade de restaurar
+4. Melhore a UI com componentes do Bootstrap
+5. Implemente validações nos formulários
+
+Você consegue, eu do futuro! Lembre-se de commitar frequentemente e escrever mensagens claras no Git. 💪
+
+**Relatório de Progresso - Laravel (SoftDelete, Routes, Controllers)**
+O queconsegui implementar até o momento conforme solicitado na atividade:
+
+###O que foi implementado:
+
+**1. Migrations com SoftDelete:**
+- Criei todas as migrations para as 8 entidades (Aluno, Categoria, Comprovante, Curso, Declaração, Documento, Nível, Turma)
+- Todas incluem `$table->softDeletes();` para implementar o SoftDelete
+- Exemplo da migration de Alunos:
+```php
+Schema::create('alunos', function (Blueprint $table) {
+    $table->id();
+    $table->string('nome');
+    // outros campos...
+    $table->timestamps();
+    $table->softDeletes(); // Implementação do SoftDelete
+});
+```
+
+**2. Controllers básicos:**
+- Desenvolvi controllers para todas as entidades com os métodos:
+  - index(), create(), store(), show(), edit(), update(), destroy()
+- Implementei a lógica de SoftDelete no método destroy():
+```php
+public function destroy($id)
+{
+    $aluno = Aluno::findOrFail($id);
+    $aluno->delete(); // SoftDelete
+    return redirect()->route('alunos.index');
+}
+```
+
+**3. Rotas Resource:**
+- Configurei as rotas no arquivo web.php usando:
+```php
+Route::resource('alunos', AlunoController::class);
+// Repetido para todas as outras 7 entidades
+```
+
+**4. Views Iniciadas:**
+- Criei a estrutura básica de views para:
+  - Listagem (index.blade.php)
+  - Formulários (create.blade.php e edit.blade.php)
+- Utilizei o template app.blade.php como layout principal
+
+### O que ainda falta terminar:
+
+1. Views completas para todas as operações CRUD
+2. Implementação da lixeira (listagem de itens excluídos)
+3. Funcionalidade de restauração de itens
+4. Validações nos formulários
+
+### Dificuldades Encontradas:
+
+1. Ajustar os relacionamentos nas migrations
+2. Implementar a exibição condicional para itens excluídos
+3. Organizar as rotas adicionais para a lixeira
+
+Estou trabalhando para completar esses itens pendentes. 
+data: 16/04/2025
